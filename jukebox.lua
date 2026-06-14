@@ -231,8 +231,17 @@ local function main()
         elseif name == "timer" then
             -- If not playing, poll for a disc that may have appeared
             if not isPlaying and next(playersInDetector) and jukebox.getDisc() then
-                debug("disc appeared in jukebox!")
-                startPlaying()
+                -- Only start if at least one player is within the small trigger range
+                local ok3, entities3 = pcall(function() return detector.nearbyEntities() end)
+                if ok3 then
+                    for _, e in ipairs(entities3 or {}) do
+                        if e.isPlayer and isInSmallRange(e) then
+                            debug("disc appeared in jukebox!")
+                            startPlaying()
+                            break
+                        end
+                    end
+                end
             end
 
             -- Periodic entity scan (handles new/removed players and
