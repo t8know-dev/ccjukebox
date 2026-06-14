@@ -11,10 +11,7 @@ local CONFIG = {
     -- Entity detector block coordinates (x, y, z). Required when range is set.
     -- The detector logs its name at startup — look for "detector OK on ..." and
     -- note the coordinates of that block in the world.
-    detectorPos = { x = 100, y = 64, z = 200 },
-
-    -- Behavior
-    stopWhenEmpty = true,      -- stop playing when zero players in range
+    detectorPos = { x = -716, y = 83, z = -998 },
 
     -- Periodic fallback scan interval (seconds). 0 = disable.
     -- Catches missed events and handles edge cases.
