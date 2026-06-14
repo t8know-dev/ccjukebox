@@ -1,12 +1,12 @@
 local CONFIG = {
     -- Peripheral sides (nil = auto-find via peripheral.find)
-    jukeboxSide = nil,      -- e.g. "left", "right", "top", "bottom"
-    detectorSide = nil,     -- e.g. "front", "back"
+    jukeboxSide = "minecraft:jukebox_0",      -- e.g. "left", "right", "top", "bottom"
+    detectorSide = "entity_detector_2",     -- e.g. "front", "back"
 
     -- Maximum distance in blocks to detect players.
     -- The entity detector's raw range is ~17x33x17 centered on the block.
     -- Set to nil to use full detector range.
-    range = 15,
+    range = 3,
 
     -- Behavior
     stopWhenEmpty = true,      -- stop playing when zero players in range

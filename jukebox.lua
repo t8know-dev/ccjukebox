@@ -70,17 +70,25 @@ local function setup()
     debug("jukebox OK")
 
     -- Entity detector – try the given side or auto-find
+    local detectorName
     if CONFIG.detectorSide then
         detector = peripheral.wrap(CONFIG.detectorSide)
+        detectorName = CONFIG.detectorSide
     else
-        detector = peripheral.find("entity_detector")
+        detector, detectorName = peripheral.find("entity_detector")
     end
     if not detector then error("entity_detector not found") end
-    debug("detector OK")
+    debug("detector OK on %s", detectorName)
 
-    -- Grab detector position for distance filtering
-    if detector.getPosition then
-        detectorPos = detector.getPosition()
+    -- Grab detector position for distance filtering.
+    -- entity_detector does NOT have getPosition(), so we use CC:Tweaked's
+    -- peripheral.getPosition(name) which returns block coordinates.
+    local dx, dy, dz = peripheral.getPosition(detectorName)
+    if dx then
+        detectorPos = { x = dx, y = dy, z = dz }
+        debug("detector at %d,%d,%d", dx, dy, dz)
+    else
+        debug("WARNING: could not get detector position — range disabled")
     end
 end
 
@@ -145,15 +153,18 @@ end
 -- Event handlers
 ------------------------------------------------------------------------
 
--- Entity detector fires new_entity / removed_entity per entity (not array)
-local function handleEventEntity(entity, entered)
-    if not entity or not entity.isPlayer then return end
-    if not isInRange(entity) then return end
-    local uuid = entity.uuid or entity.name
-    if entered then
-        onPlayerEnter(uuid, entity.name)
-    else
-        onPlayerLeave(uuid)
+-- Entity detector fires new_entity / removed_entity with an array of entities
+local function handleEventEntityArray(entities, entered)
+    if type(entities) ~= "table" then return end
+    for _, entity in ipairs(entities) do
+        if entity and entity.isPlayer and isInRange(entity) then
+            local uuid = entity.uuid or entity.name
+            if entered then
+                onPlayerEnter(uuid, entity.name)
+            else
+                onPlayerLeave(uuid)
+            end
+        end
     end
 end
 
@@ -215,8 +226,8 @@ local function main()
         local name = ev[1]
 
         if name == "new_entity" or name == "removed_entity" then
-            -- ev[2] = peripheral side, ev[3] = entity table
-            handleEventEntity(ev[3], name == "new_entity")
+            -- ev[2] = peripheral side, ev[3] = array of entity tables
+            handleEventEntityArray(ev[3], name == "new_entity")
         elseif name == "timer" then
             -- If not playing, poll for a disc that may have appeared
             if not isPlaying and jukebox.getDisc() then
