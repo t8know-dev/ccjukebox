@@ -5,13 +5,9 @@ local CONFIG = {
 
     -- Maximum distance in blocks to detect players.
     -- The entity detector's raw range is ~17x33x17 centered on the block.
+    -- Uses the relative coordinates returned by nearbyEntities().
     -- Set to nil to use full detector range.
     range = 3,
-
-    -- Entity detector block coordinates (x, y, z). Required when range is set.
-    -- The detector logs its name at startup — look for "detector OK on ..." and
-    -- note the coordinates of that block in the world.
-    detectorPos = { x = -716, y = 83, z = -998 },
 
     -- Periodic fallback scan interval (seconds). 0 = disable.
     -- Catches missed events and handles edge cases.

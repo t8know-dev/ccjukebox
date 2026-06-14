@@ -37,8 +37,6 @@ local function debug(msg, ...)
     end
 end
 
-local detectorPos = nil
-
 local function sq(x) return x * x end
 
 local function tableCount(t)
@@ -52,9 +50,8 @@ end
 ------------------------------------------------------------------------
 local function isInSmallRange(entity)
     if not CONFIG.range then return true end
-    local dp = detectorPos
-    if not dp then return true end
-    local d2 = sq(entity.x - dp.x) + sq(entity.y - dp.y) + sq(entity.z - dp.z)
+    -- entity.x/y/z are relative to the detector block
+    local d2 = sq(entity.x) + sq(entity.y) + sq(entity.z)
     return d2 <= CONFIG.range * CONFIG.range
 end
 
@@ -81,11 +78,6 @@ local function setup()
     if not detector then error("entity_detector not found") end
     debug("detector OK")
 
-    -- Use detector position from config (required when range is set)
-    detectorPos = CONFIG.detectorPos
-    if CONFIG.range and not detectorPos then
-        debug("WARNING: range is set but detectorPos is nil in config — range disabled")
-    end
 end
 
 ------------------------------------------------------------------------
