@@ -87,29 +87,14 @@ end
 ------------------------------------------------------------------------
 -- Jukebox control
 ------------------------------------------------------------------------
-local function injectDiscIfEmpty()
-    if not CONFIG.autoInject then
-        -- Still okay if disc already present
-        return jukebox.getDisc() ~= nil
-    end
-    if jukebox.getDisc() then return true end
-
-    local ok, result = pcall(jukebox.injectDisc, jukebox,
-                             CONFIG.injectFromSide, CONFIG.discQuery)
-    if ok and result then
-        debug("disc injected")
-        return true
-    end
-    debug("no disc available to inject")
-    return false
-end
-
 local function startPlaying()
     if isPlaying then return end
     if cooldownUntil > nowMs() then return end
 
-    if not injectDiscIfEmpty() then return end
-    if not jukebox.getDisc() then return end
+    if not jukebox.getDisc() then
+        debug("cannot play — no disc in jukebox")
+        return
+    end
 
     local ok, err = pcall(jukebox.replay, jukebox)
     if not ok then
@@ -211,6 +196,15 @@ local function main()
         debug("initial scan failed: %s", tostring(entities))
     end
 
+    -- Start playing immediately if a disc is already in the jukebox
+    local disc = jukebox.getDisc()
+    if disc then
+        debug("disc found on startup: %s", disc.displayName or disc.name or "?")
+        startPlaying()
+    else
+        debug("no disc on startup — waiting for one...")
+    end
+
     -- Periodic fallback scan
     if CONFIG.scanInterval > 0 then
         os.startTimer(CONFIG.scanInterval)
@@ -224,6 +218,13 @@ local function main()
             -- ev[2] = peripheral side, ev[3] = entity table
             handleEventEntity(ev[3], name == "new_entity")
         elseif name == "timer" then
+            -- If not playing, poll for a disc that may have appeared
+            if not isPlaying and jukebox.getDisc() then
+                debug("disc appeared in jukebox!")
+                startPlaying()
+            end
+
+            -- Periodic entity scan
             local ok2, entities2 = pcall(function() return detector.nearbyEntities() end)
             if ok2 then
                 handleScanEntities(entities2)
