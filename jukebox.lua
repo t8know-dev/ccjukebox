@@ -70,25 +70,18 @@ local function setup()
     debug("jukebox OK")
 
     -- Entity detector – try the given side or auto-find
-    local detectorName
     if CONFIG.detectorSide then
         detector = peripheral.wrap(CONFIG.detectorSide)
-        detectorName = CONFIG.detectorSide
     else
-        detector, detectorName = peripheral.find("entity_detector")
+        detector = peripheral.find("entity_detector")
     end
     if not detector then error("entity_detector not found") end
-    debug("detector OK on %s", detectorName)
+    debug("detector OK")
 
-    -- Grab detector position for distance filtering.
-    -- entity_detector does NOT have getPosition(), so we use CC:Tweaked's
-    -- peripheral.getPosition(name) which returns block coordinates.
-    local dx, dy, dz = peripheral.getPosition(detectorName)
-    if dx then
-        detectorPos = { x = dx, y = dy, z = dz }
-        debug("detector at %d,%d,%d", dx, dy, dz)
-    else
-        debug("WARNING: could not get detector position — range disabled")
+    -- Use detector position from config (required when range is set)
+    detectorPos = CONFIG.detectorPos
+    if CONFIG.range and not detectorPos then
+        debug("WARNING: range is set but detectorPos is nil in config — range disabled")
     end
 end
 

@@ -8,6 +8,11 @@ local CONFIG = {
     -- Set to nil to use full detector range.
     range = 3,
 
+    -- Entity detector block coordinates (x, y, z). Required when range is set.
+    -- The detector logs its name at startup — look for "detector OK on ..." and
+    -- note the coordinates of that block in the world.
+    detectorPos = { x = 100, y = 64, z = 200 },
+
     -- Behavior
     stopWhenEmpty = true,      -- stop playing when zero players in range
 
